@@ -10,18 +10,23 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/alitto/pond/v2"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 var baseUri = "https://portal.summer-hannover.de"
+var mtx sync.Mutex
 
 // App struct
 type App struct {
-	ctx    context.Context
-	client *http.Client
-	pool   pond.Pool
+	ctx                   context.Context
+	client                *http.Client
+	pool                  pond.Pool
+	totalInstruments      float64
+	downloadedInstruments float64
 }
 
 // NewApp creates a new App application struct
@@ -38,6 +43,14 @@ func (a *App) startup(ctx context.Context) {
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+
+func (a *App) SelectDownloadDir(currentSelection string) string {
+	dir, _ := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{})
+	if dir != "" {
+		return dir
+	}
+	return currentSelection
 }
 
 func (a *App) ScrapeSITC(username, password, downloadDir string) {
@@ -66,6 +79,8 @@ func (a *App) ScrapeSITC(username, password, downloadDir string) {
 		name := s.Text()
 		instumentInfos = append(instumentInfos, SelectInstrumentInfo{name, value})
 	})
+	a.totalInstruments = float64(len(instumentInfos))
+	a.downloadedInstruments = 0
 	//fmt.Println(instumentInfos)
 
 	for _, instrumentInfo := range instumentInfos {
@@ -86,6 +101,11 @@ type PieceLink struct {
 	name       string
 	instrument string
 	href       string
+}
+
+type ProgressInfo struct {
+	InstrumentName  string
+	PercentProgress int
 }
 
 func (a *App) scrapeInstrumentPage(instrumentInfo SelectInstrumentInfo, downloadDir string) error {
@@ -113,6 +133,10 @@ func (a *App) scrapeInstrumentPage(instrumentInfo SelectInstrumentInfo, download
 		a.downloadPdf(downloadDir, pieceLink)
 		//})
 	})
+	mtx.Lock()
+	a.downloadedInstruments++
+	runtime.EventsEmit(a.ctx, "downloadProgress", ProgressInfo{InstrumentName: instrumentInfo.name, PercentProgress: int((a.downloadedInstruments / a.totalInstruments * 100))})
+	mtx.Unlock()
 	return nil
 }
 

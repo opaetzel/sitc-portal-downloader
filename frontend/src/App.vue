@@ -2,7 +2,7 @@
 import HelloWorld from './components/HelloWorld.vue'</script>
 
 <template>
-  <img id="logo" alt="Wails logo" src="./assets/images/logo-universal.png"/>
+  <img id="logo" alt="Wails logo" src="./assets/images/sitc_logo_lila.png"/>
   <HelloWorld/>
 </template>
 
@@ -10,12 +10,14 @@ import HelloWorld from './components/HelloWorld.vue'</script>
 #logo {
   display: block;
   width: 50%;
-  height: 50%;
-  margin: auto;
-  padding: 10% 0 0;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  background-origin: content-box;
+  position: fixed;
+  max-height: 70vh;
+  object-fit: contain;
+  z-index: 5;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.1;
+  pointer-events:none;
 }
 </style>

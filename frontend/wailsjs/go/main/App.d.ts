@@ -4,3 +4,5 @@
 export function Greet(arg1:string):Promise<string>;
 
 export function ScrapeSITC(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function SelectDownloadDir(arg1:string):Promise<string>;

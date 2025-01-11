@@ -9,3 +9,7 @@ export function Greet(arg1) {
 export function ScrapeSITC(arg1, arg2, arg3) {
   return window['go']['main']['App']['ScrapeSITC'](arg1, arg2, arg3);
 }
+
+export function SelectDownloadDir(arg1) {
+  return window['go']['main']['App']['SelectDownloadDir'](arg1);
+}

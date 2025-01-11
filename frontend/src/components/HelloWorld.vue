@@ -1,18 +1,34 @@
 <script setup>
-import {reactive} from 'vue'
-import {ScrapeSITC} from '../../wailsjs/go/main/App'
+import { reactive } from 'vue'
+import { ScrapeSITC, SelectDownloadDir } from '../../wailsjs/go/main/App'
+import {EventsOn, EventsOff} from "../../wailsjs/runtime/runtime";
 
 const data = reactive({
   username: "",
   password: "",
   downloadDir: "sitc_pieces",
-  resultText: "Please enter your credentials below 👇",
+  resultText: "",
+  percentDone: 0,
+  scraping: false,
 })
 
 function scrape() {
-  data.resultText = "Scraping..."
+  data.resultText = "Scraping...";
+  data.scraping = true;
+  let cancelEventId = EventsOn("downloadProgress", status => {
+    data.resultText = `Downloaded pieces for instrument ${status.InstrumentName}. Percent done: ${status.PercentProgress}`
+    data.percentDone = status.PercentProgress;
+  })
+  console.log(cancelEventId)
   ScrapeSITC(data.username, data.password, data.downloadDir).then(result => {
-    data.resultText = "Scraped everything :-)"
+    EventsOff("downloadProgress")
+    data.resultText = "Downloaded everything :-)"
+  })
+}
+
+function selectDownloadDir() {
+  SelectDownloadDir(data.downloadDir).then(result => {
+    data.downloadDir = result;
   })
 }
 
@@ -20,56 +36,55 @@ function scrape() {
 
 <template>
   <main>
-    <div id="result" class="result">{{ data.resultText }}</div>
-    <div id="input" class="input-box">
-      <input id="username" v-model="data.username" autocomplete="off" class="input" type="text" placeholder="Username"/>
-      <input id="password" v-model="data.password" autocomplete="off" class="input" type="password" placeholder="Password"/>
-      <button class="btn" @click="scrape">Scrape!</button>
+    <div class="row">
+      <div class="col">
+        <p>Welcome to the Summer in the City Portal scraper. This program will download all available pieces from the
+          portal to your computer.</p>
+        <p>Please enter your portal login information below and click the "Download!" button to start the download.</p>
+      </div>
     </div>
+    <div class="row">
+      <div class="col">
+        <label for="downloadDir">Download directory</label>
+        <p class="grouped">
+          <input id="downloadDir" v-model="data.downloadDir" type="text" disabled placeholder="Download directory">
+          <button class="button" @click="selectDownloadDir">Select</button>
+        </p>
+        <p>
+          <label for="username">Username</label>
+          <input id="username" v-model="data.username" autocomplete="off" class="input" type="text"
+            placeholder="Username" />
+        </p>
+        <p>
+          <label for="password">Password</label>
+          <input id="password" v-model="data.password" autocomplete="off" class="input" type="password"
+            placeholder="Password" />
+        </p>
+        <button class="button" @click="scrape">Download!</button>
+      </div>
+    </div>
+    <p></p>
+    <p></p>
+    <template v-if="data.scraping">
+      <div class="row">
+        <div class="col">
+          <meter max="100" min="0" :value="data.percentDone"></meter>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          {{ data.resultText }}
+        </div>
+      </div>
+    </template>
   </main>
 </template>
 
 <style scoped>
-.result {
-  height: 20px;
-  line-height: 20px;
-  margin: 1.5rem auto;
+main {
+  padding: 100px;
 }
-
-.input-box .btn {
-  width: 60px;
-  height: 30px;
-  line-height: 30px;
-  border-radius: 3px;
-  border: none;
-  margin: 0 0 0 20px;
-  padding: 0 8px;
-  cursor: pointer;
-}
-
-.input-box .btn:hover {
-  background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
-  color: #333333;
-}
-
-.input-box .input {
-  border: none;
-  border-radius: 3px;
-  outline: none;
-  height: 30px;
-  line-height: 30px;
-  padding: 0 10px;
-  background-color: rgba(240, 240, 240, 1);
-  -webkit-font-smoothing: antialiased;
-}
-
-.input-box .input:hover {
-  border: none;
-  background-color: rgba(255, 255, 255, 1);
-}
-
-.input-box .input:focus {
-  border: none;
-  background-color: rgba(255, 255, 255, 1);
+meter {
+  width: 100%;
 }
 </style>
