@@ -20,4 +20,4 @@ jobs:
         with:
           build-name: ${{ matrix.build.name }}
           build-platform: ${{ matrix.build.platform }}
-          wails-version: 2.9.2
+          wails-version: v2.9.2
