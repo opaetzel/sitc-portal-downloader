@@ -8,8 +8,8 @@ jobs:
       fail-fast: false
       matrix:
         build: [
-          {name: wailsTest, platform: linux/amd64, os: debian-latest},
-          {name: wailsTest, platform: windows/amd64, os: windows-latest}
+          {name: SITC-pieces-downloader, platform: linux/amd64, os: debian-latest},
+          {name: SITC-pieces-downloader, platform: windows/amd64, os: windows-latest}
         ]
     runs-on: ${{ matrix.build.os }}
     steps:
