@@ -149,7 +149,7 @@ func (a *App) downloadPdf(downloadDir string, link PieceLink) {
 	dirNameWithInstrument := path.Join(downloadDir, link.instrument)
 	os.MkdirAll(dirNameWithInstrument, 0755)
 
-	filename := path.Join(dirNameWithInstrument, link.name+" (SITC).pdf")
+	filename := path.Join(dirNameWithInstrument, fmt.Sprintf("%s %s (SITC).pdf", link.name, link.instrument))
 	f, err := os.Create(filename)
 	if err != nil {
 		fmt.Printf("error creating file '%s': %s\n", filename, err.Error())
